@@ -1,0 +1,75 @@
+<html>
+<head>
+    <style>
+        .preview {
+            height: 21px;
+            width: 21px;
+        }
+    </style>
+    <script>
+        const resources = [
+            {id: 'scrap_metall', name: "Scrap Metal", ids: [53, 57], image: "scrap_metall.png"},
+            {id: 'copper', name: "Copper", ids: [43, 118], image: "copper.png"},
+            {id: 'wires', name: "Wires", ids: [85, 221], image: "wires.png"},
+            {id: 'plastic', name: "Plastic", ids: [785, 786], image: "plastic.png"},
+            {id: 'batteries', name: "Batteries", ids: [783, 784], image: "batteries.png"},
+            {id: 'electronics', name: "Electronics", ids: [201, 168], image: "electronics.png"},
+            {id: 'uranium_ore', name: "Uranium ore", ids: [335, 337], image: "uranium_ore.png"},
+        ];
+        const inputStates = [];
+
+        function loadPrices() {
+            fetch('https://crossoutdb.com/api/v1/items?category=resources')
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    showForm(data);
+                })
+                .catch(error => {
+                    alert('Something went wrong!');
+                    console.error(error);
+                });
+        }
+        function showForm(prices) {
+            for (let item of resources) {
+                const price = Math.min(...prices
+                    .filter(priceRecord => item.ids.includes(priceRecord.id))
+                    .map(priceRecord => priceRecord.buyPrice / priceRecord.amount)
+                );
+                const inputBlock = document.createElement('div');
+                inputBlock.innerHTML = `
+                    <p>
+                        <img class="preview" src="./img/${item.image}">
+                        <input id="${item.id}" data-price="${price}" class="input-group-field resources" type="number" placeholder="${item.name}">
+                    </p>
+                `;
+                document.getElementById('form').append(inputBlock);
+            }
+            [...document.getElementsByClassName('resources')].map(input => input.addEventListener('input', onInput));
+        }
+        function onInput(event) {
+            const input = event.target;
+            const price = +input.dataset.price;
+            const amount = +input.value;
+            if (!Number.isInteger(amount)) {
+                console.error('Amount should be number:', amount); // TODO input state change
+                return;
+            }
+            const total = amount * price;
+            const inputState = inputStates.find(state => state.id === input.id);
+            if (!inputState) {
+                inputStates.push({id: input.id, amount, price, total});
+            } else {
+                Object.assign(inputState, {amount, price, total});
+            }
+            document.getElementById('total').innerHTML = Math.round(inputStates.reduce((total, state) => total + state.total, 0))/100;
+        }
+    </script>
+</head>
+<body onload="loadPrices()"> 
+    <form id="form">
+    </form>
+    <p><span id="total"></span></p>
+</body>
+</html>
