@@ -37,16 +37,23 @@
                     .filter(priceRecord => item.ids.includes(priceRecord.id))
                     .map(priceRecord => priceRecord.buyPrice / priceRecord.amount)
                 );
-                const inputBlock = document.createElement('div');
-                inputBlock.innerHTML = `
-                    <p>
-                        <img class="preview" src="./img/${item.image}">
-                        <input id="${item.id}" data-price="${price}" class="input-group-field resources" type="number" placeholder="${item.name}">
-                    </p>
-                `;
+                const img = document.createElement('img');
+                img.src = `./img/${item.image}`;
+                img.classList = 'preview';
+
+                const input = document.createElement('input');
+                input.dataset.price = price;
+                input.id = item.id;
+                input.type = 'number';
+                input.placeholder = item.name;
+                input.addEventListener('input', onInput);
+                
+                const inputBlock = document.createElement('p');
+                inputBlock.append(img)
+                inputBlock.append(input);
+
                 document.getElementById('form').append(inputBlock);
             }
-            [...document.getElementsByClassName('resources')].map(input => input.addEventListener('input', onInput));
         }
         function onInput(event) {
             const input = event.target;
