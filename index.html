@@ -32,6 +32,7 @@
                 });
         }
         function showForm(prices) {
+            const form = document.getElementById('form');
             for (let item of resources) {
                 const price = Math.min(...prices
                     .filter(priceRecord => item.ids.includes(priceRecord.id))
@@ -47,12 +48,12 @@
                 input.type = 'number';
                 input.placeholder = item.name;
                 input.addEventListener('input', onInput);
-                
+    
                 const inputBlock = document.createElement('p');
-                inputBlock.append(img)
+                inputBlock.append(img);
                 inputBlock.append(input);
 
-                document.getElementById('form').append(inputBlock);
+                form.append(inputBlock);
             }
         }
         function onInput(event) {
@@ -66,16 +67,31 @@
             const total = amount * price;
             const inputState = inputStates.find(state => state.id === input.id);
             if (!inputState) {
-                inputStates.push({id: input.id, amount, price, total});
+                inputStates.push({id: input.id, total});
             } else {
-                Object.assign(inputState, {amount, price, total});
+                inputState.total = total;
             }
+            updateTotal();
+        }
+        function updateTotal() {
             document.getElementById('total').innerHTML = Math.round(inputStates.reduce((total, state) => total + state.total, 0))/100;
+        }
+        function resetState() {
+            for (let item of resources) {                
+                const input = document.getElementById(item.id);
+                input.value = '';
+                const inputState = inputStates.find(state => state.id === item.id);
+                if (inputState) {
+                    inputState.total = 0;
+                }
+            }
+            updateTotal();    
         }
     </script>
 </head>
-<body onload="loadPrices()"> 
+<body onload="loadPrices()">     
     <form id="form">
+        <input type="button" value="Reset" onclick="resetState()">
     </form>
     <p><span id="total">0</span></p>
 </body>
